@@ -108,4 +108,11 @@ Run main.py by selecting "Run python file in terminal..."
 
 It should show a green image. Press a key to close the program.
 
+
+## Runnimg tests
+
+Select the test framework as pytest. Select the root of tests as ``test`` folder
+
 [Download the test binaries and save them in binaries/ folder.]
+
+
