@@ -88,7 +88,7 @@ def mutualInformation(img, sablon, x_offset=0, y_offset=0):
 # generare de histograma probabilistica
 def generateHistP(img):
     h = [0] * 256
-    (rows, cols, culori) = img.shape
+    (rows, cols, colors) = img.shape
     for i in range(0, rows):
         for j in range(0, cols):
             h[img[i][j]] += 1.0
@@ -118,26 +118,56 @@ def distanceK(keypointA, keypointB):
     return (directionWeight * directionMetric + colorWeight * colorMetric) / (colorWeight + directionWeight)
 
 
+def cosineSimilarityImg(img, sablon, x_offset=0, y_offset=0):
+    # assert (isinstance(img, cv2.))
+    # assert (isinstance(sablon, cv2.img))
+    (rows, cols, colors) = sablon.shape
+    (rows2, cols2, colors2) = img.shape
+    assert (rows <= rows2)
+    assert (cols <= cols2)
+
+    sum = 0
+    for i in range(0, rows):
+        for j in range(0, cols):
+            keypointA = Keypoint([i, j],
+                                 sablon[i][j],
+                                 [1, 1, 1])
+            keypointB = Keypoint([y_offset + i, x_offset + j],
+                                 img[y_offset + i, x_offset + j],
+                                 [1, 1, 1])
+            sum += cosineSimilarity(keypointA, keypointB)
+
+    return sum / (rows * cols)
+
+
 def cosineSimilarity(keypointA, keypointB):
     assert (isinstance(keypointA, Keypoint))
     assert (isinstance(keypointB, Keypoint))
+    colorWeight = 20
+    directionWeight = 1
 
-    numerator = (keypointA.color[0] * keypointB.color[0] +
-                 keypointA.color[1] * keypointB.color[1] +
-                 keypointA.color[2] * keypointB.color[2])
+    numerator1 = (int(keypointA.color[0]) * int(keypointB.color[0]) +
+                  int(keypointA.color[1]) * int(keypointB.color[1]) +
+                  int(keypointA.color[2]) * int(keypointB.color[2]))
+    numerator2 = 0
     dimension = len(keypointA.direction)
     for i in range(dimension):
-        numerator += keypointA.direction[i] * keypointB.direction[i]
+        numerator2 += keypointA.direction[i] * keypointB.direction[i]
+    numerator = (numerator1 * colorWeight + numerator2 * directionWeight) / (colorWeight + directionWeight)
 
     dimension = len(keypointA.color)
-    denominatorA = 0
-    denominatorB = 0
+    denominatorA_1 = 0
+    denominatorB_1 = 0
     for i in range(dimension):
-        denominatorA += keypointA.color[i] ** 2
-        denominatorB += keypointB.color[i] ** 2
+        denominatorA_1 += keypointA.color[i] ** 2
+        denominatorB_1 += keypointB.color[i] ** 2
     dimension = len(keypointA.direction)
+    denominatorA_2 = 0
+    denominatorB_2 = 0
     for i in range(dimension):
-        denominatorA += keypointA.direction[i] ** 2
-        denominatorB += keypointB.direction[i] ** 2
+        denominatorA_2 += keypointA.direction[i] ** 2
+        denominatorB_2 += keypointB.direction[i] ** 2
+    denominatorA = (denominatorA_1 * colorWeight + denominatorA_2 * directionWeight)/(colorWeight+directionWeight)
+    denominatorB = (denominatorB_1 * colorWeight + denominatorB_2 * directionWeight)/(colorWeight+directionWeight)
 
     return numerator / (np.sqrt(denominatorA) * np.sqrt(denominatorB))

@@ -1,31 +1,36 @@
 import unittest
 import cv2
+from main.defs import Keypoint
 from main import metrics
 
 IMAGE_FOLDER = '..\\..\\images\\'
 
 
-class TestColorDistance(unittest.TestCase):
-    def testColorDistanceOnPoints(self):
-        gray1 = 0
-        gray2 = 255
-        metric = metrics.distance(gray1, gray2)
-        self.assertGreater(metric, 0.9, "Testing on grayscale")
-        color1 = [255, 120, 255]
-        color2 = [0, 255, 0]
-        metric = metrics.distance(color1, color2)
-        self.assertGreater(metric, 0.8, "Testing on color 1")
-        color1 = [255, 120, 255]
-        color2 = [240, 100, 240]
-        metric = metrics.distance(color1, color2)
-        self.assertGreater(0.1, metric, "Testing on color 2")
+class TestCosineSimilarity(unittest.TestCase):
+    def testCosineSimilarityOnPoints(self):
+        keypointA = Keypoint([0, 0],
+                             [120, 120, 120],
+                             [0, 3, 1])
+        keypointB = Keypoint([50, 50],
+                             [120, 120, 120],
+                             [0, 3, 1])
+        metric = metrics.cosineSimilarity(keypointA, keypointB)
+        self.assertGreater(metric, 0.99, "Testing on color 1")
+        keypointA = Keypoint([0, 0],
+                             [120, 120, 120],
+                             [0, 3, 1])
+        keypointB = Keypoint([50, 50],
+                             [255, 255, 255],
+                             [1201020, 1201020, 1])
+        metric = metrics.cosineSimilarity(keypointA, keypointB)
+        self.assertGreater(0.02, metric, "Testing on color 2")
 
     # @unittest.skip
-    def testColorDistanceOnImageEasier(self):
+    def testCosineSimilarityOnImageEasier(self):
         sample = cv2.imread(IMAGE_FOLDER + "colorFlareSmaller.png")
         test = cv2.imread(IMAGE_FOLDER + "colorFlareSmall.png")
 
-        SIMILARITY_DISTANCE_THRESHOLD_EASIER = 0.05
+        SIMILARITY_DISTANCE_THRESHOLD_EASIER = 0.90
 
         (rows, cols, colors1) = test.shape
         (rows2, cols2, colors2) = sample.shape
@@ -34,8 +39,8 @@ class TestColorDistance(unittest.TestCase):
 
         for i in range(0, rows - rows2):
             for j in range(0, cols - cols2):
-                dist = metrics.distanceImg(test, sample, j, i)
-                if dist < SIMILARITY_DISTANCE_THRESHOLD_EASIER:
+                dist = metrics.cosineSimilarityImg(test, sample, j, i)
+                if dist >= SIMILARITY_DISTANCE_THRESHOLD_EASIER:
                     matchOffsets.append((j, i))
 
         for (x, y) in matchOffsets:
@@ -43,12 +48,12 @@ class TestColorDistance(unittest.TestCase):
 
         self.assertEqual(len(matchOffsets), 1)
 
-    @unittest.skip
-    def testColorDistanceOnImageMedium(self):
-        sample = cv2.imread(IMAGE_FOLDER + "colorFlareSmall.png")
-        test = cv2.imread(IMAGE_FOLDER + "colorFlareMedium.png")
+    # @unittest.skip
+    def testColorDistanceOnImageSmall2(self):
+        sample = cv2.imread(IMAGE_FOLDER + "colorFlareSmaller2.png")
+        test = cv2.imread(IMAGE_FOLDER + "colorFlareSmall.png")
 
-        SIMILARITY_DISTANCE_THRESHOLD_MEDIUM = 0.20
+        SIMILARITY_DISTANCE_THRESHOLD_EASY2 = 0.9999
 
         (rows, cols, colors1) = test.shape
         (rows2, cols2, colors2) = sample.shape
@@ -57,14 +62,14 @@ class TestColorDistance(unittest.TestCase):
 
         for i in range(0, rows - rows2):
             for j in range(0, cols - cols2):
-                dist = metrics.distanceImg(test, sample, j, i)
-                if dist < SIMILARITY_DISTANCE_THRESHOLD_MEDIUM:
+                dist = metrics.cosineSimilarityImg(test, sample, j, i)
+                if dist >= SIMILARITY_DISTANCE_THRESHOLD_EASY2:
                     matchOffsets.append((j, i, dist))
 
         for (x, y, d) in matchOffsets:
             print("Match at offsets %d %d with similarity %f" % (x, y, d))
 
-        #self.assertEqual(len(matchOffsets), 3)
+        self.assertEqual(len(matchOffsets), 1)
 
 
 if __name__ == '__main__':

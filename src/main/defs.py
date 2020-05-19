@@ -1,7 +1,9 @@
+import numpy as np
+
 class Keypoint:
     def __init__(self, position, color, direction):
         assert (isinstance(position, list))
-        assert (isinstance(color, list))
+        assert (isinstance(color, list) or isinstance(color, np.ndarray))
         assert (len(color) == 3)
         for _color in color:
             assert (0 <= _color < 256)
