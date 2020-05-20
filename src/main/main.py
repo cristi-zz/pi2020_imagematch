@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import os
-from main import metrics
+
 
 IMAGE_FOLDER = '..\\images\\'
 

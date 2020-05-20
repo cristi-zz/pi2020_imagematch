@@ -53,11 +53,12 @@ def mutualInformation(img, sablon, x_offset=0, y_offset=0):
     assert (rows <= rows2)
     assert (cols <= cols2)
 
-    pA = [0] * 256
-    pB = [0] * 256
-    pAB = [None] * 256
-    for i in range(256):
-        pAB[i] = [0] * 256
+    pA = np.zeros(256, dtype=np.float32)
+
+    pB = np.zeros(256, dtype=np.float32)
+
+    pAB = np.zeros((256, 256), dtype=np.float32)
+
 
     sum = 0
     for i in range(0, rows):
