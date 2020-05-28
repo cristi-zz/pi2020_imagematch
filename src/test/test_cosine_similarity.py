@@ -21,11 +21,19 @@ class TestCosineSimilarity(unittest.TestCase):
                              [0, 3, 1])
         keypointB = Keypoint([50, 50],
                              [255, 255, 255],
-                             [1201020, 1201020, 1])
+                             [0, 9, 3])
         metric = metrics.cosineSimilarity(keypointA, keypointB)
-        self.assertGreater(0.02, metric, "Testing on color 2")
+        self.assertGreater(metric, 0.99, "Testing on color 2")
+        keypointA1 = Keypoint([0, 0],
+                              [255, 255, 255],
+                              [0, 3, 1])
+        keypointB1 = Keypoint([50, 50],
+                              [164, 73, 163],
+                              [12, 12, 1])
+        metric = metrics.cosineSimilarity(keypointA1, keypointB1)
 
-    # @unittest.skip
+
+    #@unittest.skip
     def testCosineSimilarityOnImageEasier(self):
         sample = cv2.imread(IMAGE_FOLDER + "colorFlareSmaller.png")
         test = cv2.imread(IMAGE_FOLDER + "colorFlareSmall.png")
@@ -48,7 +56,7 @@ class TestCosineSimilarity(unittest.TestCase):
 
         self.assertEqual(len(matchOffsets), 1)
 
-    # @unittest.skip
+    @unittest.skip
     def testColorDistanceOnImageSmall2(self):
         sample = cv2.imread(IMAGE_FOLDER + "colorFlareSmaller2.png")
         test = cv2.imread(IMAGE_FOLDER + "colorFlareSmall.png")

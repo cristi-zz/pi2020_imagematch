@@ -7,15 +7,10 @@ from main.defs import Keypoint
 
 
 def distanceImg(img, sablon, x_offset=0, y_offset=0, colorWeight=1):
-    # assert (isinstance(img, cv2.))
-    # assert (isinstance(sablon, cv2.img))
     (rows, cols, culori) = sablon.shape
     (rows2, cols2, culori2) = img.shape
     assert (rows <= rows2)
     assert (cols <= cols2)
-
-    # print(sablon[0][0][0], img[0][0])
-    # print(sablon[0][0].__class__)
 
     sum = 0
     for i in range(0, rows):
@@ -30,10 +25,11 @@ def distanceImg(img, sablon, x_offset=0, y_offset=0, colorWeight=1):
 def distance(p1, p2):
     colorWeight = 1
     colorMetric = 0
+
     if isinstance(p1, list) or isinstance(p1, np.ndarray) and len(p1) == 3:
-        colorMetric = np.sqrt(((int(p1[0]) - p2[0]) ** 2) +
-                              ((int(p1[1]) - p2[1]) ** 2) +
-                              ((int(p1[2]) - p2[2]) ** 2)) / np.sqrt((255 ** 2) * 3)
+        colorA = np.array(p1, np.uint32)
+        colorB = np.array(p2, np.uint32)
+        colorMetric = np.sqrt(np.sum((colorA - colorB) * (colorA - colorB))) / np.sqrt((255**2)*3)
     else:
         if isinstance(p1, int):
             colorMetric = np.sqrt(int(p1 - p2) ** 2) / np.sqrt(255 ** 2)
@@ -44,9 +40,10 @@ def distance(p1, p2):
 
 
 # mutual information
+
+epsilon = 1e-7
+
 def mutualInformation(img, sablon, x_offset=0, y_offset=0):
-    # assert (isinstance(img, cv2.))
-    # assert (isinstance(sablon, cv2.img))
     (rows, cols) = sablon.shape
     (rows2, cols2) = img.shape
 
@@ -59,7 +56,6 @@ def mutualInformation(img, sablon, x_offset=0, y_offset=0):
 
     pAB = np.zeros((256, 256), dtype=np.float32)
 
-
     sum = 0
     for i in range(0, rows):
         for j in range(0, cols):
@@ -67,21 +63,17 @@ def mutualInformation(img, sablon, x_offset=0, y_offset=0):
             pB[img[y_offset + i][x_offset + j]] += 1
             pAB[sablon[i][j]][img[y_offset + i][x_offset + j]] += 1
 
-    for i in range(0, 256):
-        pA[i] /= rows * cols
-        pB[i] /= rows * cols
-        for j in range(0, 256):
-            pAB[i][j] /= rows * cols
+    pA /= rows*cols
+    pB /= rows*cols
+    pAB /= rows*cols
 
     for i in range(0, rows):
         for j in range(0, cols):
             currentPAB = pAB[sablon[i][j]][img[y_offset + i][x_offset + j]]
             numerator = pAB[sablon[i][j]][img[y_offset + i][x_offset + j]]
             denominator = pA[sablon[i][j]] * pB[img[y_offset + i][x_offset + j]]
-            fraction = numerator / denominator
-            if fraction < 1:
-                fraction = 1
-            sum += currentPAB * np.log(fraction)
+            fraction = numerator / (denominator + epsilon)
+            sum += currentPAB * np.log(1+fraction)
 
     return sum
 
@@ -101,33 +93,30 @@ def generateHistP(img):
 
 def distanceK(keypointA, keypointB):
     colorWeight = 1
-    directionWeight = 1
+    directionWeight = 0
 
     assert (isinstance(keypointA, Keypoint))
     assert (isinstance(keypointB, Keypoint))
 
-    colorMetric = np.sqrt(((keypointA.color[0] - keypointB.color[0]) ** 2) +
-                          ((keypointA.color[1] - keypointB.color[1]) ** 2) +
-                          ((keypointA.color[2] - keypointB.color[2]) ** 2))
+    colorA = np.array(keypointA.color, np.uint32)
+    colorB = np.array(keypointB.color, np.uint32)
+    directionA = np.array(keypointA.direction, np.uint32)
+    directionB = np.array(keypointB.direction, np.uint32)
 
-    dimension = len(keypointA.direction)
-    directionMetric = 0
-    for i in range(dimension):
-        directionMetric += (keypointA.direction[i] - keypointB.direction[i]) ** 2
-    directionMetric = np.sqrt(directionMetric)
+    colorMetric = np.sqrt(np.sum((colorA - colorB) * (colorA - colorB)))
+
+    directionMetric = np.sqrt(np.sum((directionA - directionB) * (directionA - directionB)))
 
     return (directionWeight * directionMetric + colorWeight * colorMetric) / (colorWeight + directionWeight)
 
 
 def cosineSimilarityImg(img, sablon, x_offset=0, y_offset=0):
-    # assert (isinstance(img, cv2.))
-    # assert (isinstance(sablon, cv2.img))
     (rows, cols, colors) = sablon.shape
     (rows2, cols2, colors2) = img.shape
     assert (rows <= rows2)
     assert (cols <= cols2)
 
-    sum = 0
+    sum1 = 0
     for i in range(0, rows):
         for j in range(0, cols):
             keypointA = Keypoint([i, j],
@@ -136,39 +125,37 @@ def cosineSimilarityImg(img, sablon, x_offset=0, y_offset=0):
             keypointB = Keypoint([y_offset + i, x_offset + j],
                                  img[y_offset + i, x_offset + j],
                                  [1, 1, 1])
-            sum += cosineSimilarity(keypointA, keypointB)
+            sum1 += cosineSimilarity(keypointA, keypointB)
 
-    return sum / (rows * cols)
+    return sum1 / (rows * cols)
 
 
 def cosineSimilarity(keypointA, keypointB):
     assert (isinstance(keypointA, Keypoint))
     assert (isinstance(keypointB, Keypoint))
-    colorWeight = 20
-    directionWeight = 1
+    colorWeight = 1
+    directionWeight = 0
 
-    numerator1 = (int(keypointA.color[0]) * int(keypointB.color[0]) +
-                  int(keypointA.color[1]) * int(keypointB.color[1]) +
-                  int(keypointA.color[2]) * int(keypointB.color[2]))
-    numerator2 = 0
-    dimension = len(keypointA.direction)
-    for i in range(dimension):
-        numerator2 += keypointA.direction[i] * keypointB.direction[i]
-    numerator = (numerator1 * colorWeight + numerator2 * directionWeight) / (colorWeight + directionWeight)
+    colorA = np.array(keypointA.color, np.uint32)
+    colorB = np.array(keypointB.color, np.uint32)
+    directionA = np.array(keypointA.direction, np.uint32)
+    directionB = np.array(keypointB.direction, np.uint32)
 
-    dimension = len(keypointA.color)
-    denominatorA_1 = 0
-    denominatorB_1 = 0
-    for i in range(dimension):
-        denominatorA_1 += keypointA.color[i] ** 2
-        denominatorB_1 += keypointB.color[i] ** 2
-    dimension = len(keypointA.direction)
-    denominatorA_2 = 0
-    denominatorB_2 = 0
-    for i in range(dimension):
-        denominatorA_2 += keypointA.direction[i] ** 2
-        denominatorB_2 += keypointB.direction[i] ** 2
-    denominatorA = (denominatorA_1 * colorWeight + denominatorA_2 * directionWeight)/(colorWeight+directionWeight)
-    denominatorB = (denominatorB_1 * colorWeight + denominatorB_2 * directionWeight)/(colorWeight+directionWeight)
+    keypointA.color = colorA
+    keypointB.color = colorB
+    keypointA.direction = directionA
+    keypointB.direction = directionB
+
+    numerator1 = np.dot(colorA, colorB) * colorWeight
+    numerator2 = np.dot(directionA, directionB) * directionWeight
+    numerator = (numerator1 + numerator2) / (colorWeight + directionWeight)
+
+    denominatorA = np.dot(colorA, colorA) * colorWeight
+    denominatorA2 = np.dot(directionA, directionA) * directionWeight
+    denominatorA = (denominatorA + denominatorA2) / (colorWeight + directionWeight)
+
+    denominatorB = np.dot(colorB, colorB) * colorWeight
+    denominatorB2 = np.dot(directionB, directionB) * directionWeight
+    denominatorB = (denominatorB + denominatorB2) / (colorWeight + directionWeight)
 
     return numerator / (np.sqrt(denominatorA) * np.sqrt(denominatorB))
