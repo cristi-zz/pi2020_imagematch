@@ -21,7 +21,7 @@ def testColorDistanceOnPoints():
 
 
 def testColorDistanceOnImageEasier():
-    sample = cv2.imread(IMAGE_FOLDER + "colorFlareSmaller.png")
+    sample = cv2.imread(IMAGE_FOLDER + "colorFlareSmaller2.png")
     test = cv2.imread(IMAGE_FOLDER + "colorFlareSmall.png")
     assert sample is not None
     assert test is not None

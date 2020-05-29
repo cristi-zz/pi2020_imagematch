@@ -1,7 +1,6 @@
 import numpy as np
 import math
 import cv2
-
 # the distance is computed based on color
 from main.defs import Keypoint
 
@@ -29,7 +28,7 @@ def distance(p1, p2):
     if isinstance(p1, list) or isinstance(p1, np.ndarray) and len(p1) == 3:
         colorA = np.array(p1, np.uint32)
         colorB = np.array(p2, np.uint32)
-        colorMetric = np.sqrt(np.sum((colorA - colorB) * (colorA - colorB))) / np.sqrt((255**2)*3)
+        colorMetric = np.sqrt(np.sum((colorA - colorB) * (colorA - colorB))) / np.sqrt((255 ** 2) * 3)
     else:
         if isinstance(p1, int):
             colorMetric = np.sqrt(int(p1 - p2) ** 2) / np.sqrt(255 ** 2)
@@ -42,6 +41,7 @@ def distance(p1, p2):
 # mutual information
 
 epsilon = 1e-7
+
 
 def mutualInformation(img, sablon, x_offset=0, y_offset=0):
     (rows, cols) = sablon.shape
@@ -63,9 +63,9 @@ def mutualInformation(img, sablon, x_offset=0, y_offset=0):
             pB[img[y_offset + i][x_offset + j]] += 1
             pAB[sablon[i][j]][img[y_offset + i][x_offset + j]] += 1
 
-    pA /= rows*cols
-    pB /= rows*cols
-    pAB /= rows*cols
+    pA /= rows * cols
+    pB /= rows * cols
+    pAB /= rows * cols
 
     for i in range(0, rows):
         for j in range(0, cols):
@@ -73,22 +73,9 @@ def mutualInformation(img, sablon, x_offset=0, y_offset=0):
             numerator = pAB[sablon[i][j]][img[y_offset + i][x_offset + j]]
             denominator = pA[sablon[i][j]] * pB[img[y_offset + i][x_offset + j]]
             fraction = numerator / (denominator + epsilon)
-            sum += currentPAB * np.log(1+fraction)
+            sum += currentPAB * np.log(1 + fraction)
 
     return sum
-
-
-# generare de histograma probabilistica
-def generateHistP(img):
-    h = [0] * 256
-    (rows, cols, colors) = img.shape
-    for i in range(0, rows):
-        for j in range(0, cols):
-            h[img[i][j]] += 1.0
-    for i in range(0, 256):
-        h[i] /= rows * cols
-
-    return h
 
 
 def distanceK(keypointA, keypointB):
