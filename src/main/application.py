@@ -123,6 +123,35 @@ def colorDistance():
     cv2.imwrite(os.path.join(OUTPUT_DIRECTORY, "distance_medium.jpg"), mask)
     #cv2.waitKey()
 
+def mutualInformation():
+    global greenToRedGradient
+    global mainImage
+    global secondaryImage
+    mainImage = cv2.cvtColor(mainImage, cv2.COLOR_BGR2GRAY)
+    secondaryImage = cv2.cvtColor(secondaryImage, cv2.COLOR_BGR2GRAY)
+    (rows, cols) = mainImage.shape
+    (rows1, cols1) = secondaryImage.shape
+    mask = np.zeros((rows, cols, 3), np.uint8)
+    for i in range(rows):
+        for j in range(cols):
+            mask[i][j]  = greenToRedGradient[0]
+
+    for i in range(0, rows - rows1):
+        for j in range(0, cols - cols1):
+            dist = metrics.mutualInformation(mainImage, secondaryImage, j, i)
+            print(dist)
+            # print(i, j)
+            mask = fillMask(imageMask=mask,
+                            offset_x=j,
+                            offset_y=i,
+                            fill_x=cols1,
+                            fill_y=rows1,
+                            value=greenToRedGradient[99 - int(dist * 10)])
+
+    cv2.imshow("Mask", mask)
+    cv2.imwrite(os.path.join(OUTPUT_DIRECTORY, "distance_medium.jpg"), mask)
+    cv2.waitKey()
+
 def cosineDistance():
     global greenToRedGradient
 
@@ -164,7 +193,8 @@ def main():
     buildGradient()
     getImages()
     #colorDistance()
-    cosineDistance()
+    # cosineDistance()
+    mutualInformation()
 
 
 if __name__ == "__main__":
