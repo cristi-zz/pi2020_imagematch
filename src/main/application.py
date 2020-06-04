@@ -13,8 +13,8 @@ mainImage = None
 greenToRedGradient = None
 gradientToValue = None
 
-
 OUTPUT_DIRECTORY = "..\\..\\similarity_images\\"
+
 
 def getImages():
     global secondaryImage
@@ -23,8 +23,8 @@ def getImages():
     root = tk.Tk()
     rootDir = os.path.join(os.curdir, "..\\..\\")
     root.withdraw()
-    mainImage = None #cv2.imread("..\\..\\images\\colorFlareSmall.png")
-    secondaryImage = None #cv2.imread("..\\..\\images\\colorFlareSmaller.png")
+    mainImage = None  # cv2.imread("..\\..\\images\\colorFlareSmall.png")
+    secondaryImage = None  # cv2.imread("..\\..\\images\\colorFlareSmaller.png")
     while mainImage is None:
         mainImagePath = filedialog.askopenfilename(initialdir=rootDir,
                                                    title="Select An Image",
@@ -98,7 +98,7 @@ def buildGradient():
     gradientToValue[str(zero)] = -1
 
 
-def colorDistance():
+def colorDistance(mainImage, secondaryImage):
     global greenToRedGradient
 
     (rows, cols, colors) = mainImage.shape
@@ -119,14 +119,15 @@ def colorDistance():
                             fill_y=rows1,
                             value=greenToRedGradient[99 - int(dist * 100)])
 
-    cv2.imshow("Mask", mask)
-    cv2.imwrite(os.path.join(OUTPUT_DIRECTORY, "distance_medium.jpg"), mask)
-    #cv2.waitKey()
+    return mask
+    # cv2.imshow("Mask", mask)
+    # cv2.imwrite(os.path.join(OUTPUT_DIRECTORY, "distance_medium.jpg"), mask)
+    # #cv2.waitKey()
 
-def mutualInformation():
+
+def mutualInformation(mainImage, secondaryImage):
     global greenToRedGradient
-    global mainImage
-    global secondaryImage
+
     mainImage = cv2.cvtColor(mainImage, cv2.COLOR_BGR2GRAY)
     secondaryImage = cv2.cvtColor(secondaryImage, cv2.COLOR_BGR2GRAY)
     (rows, cols) = mainImage.shape
@@ -134,7 +135,7 @@ def mutualInformation():
     mask = np.zeros((rows, cols, 3), np.uint8)
     for i in range(rows):
         for j in range(cols):
-            mask[i][j]  = greenToRedGradient[0]
+            mask[i][j] = greenToRedGradient[0]
 
     for i in range(0, rows - rows1):
         for j in range(0, cols - cols1):
@@ -146,13 +147,15 @@ def mutualInformation():
                             offset_y=i,
                             fill_x=cols1,
                             fill_y=rows1,
-                            value=greenToRedGradient[99 - int(dist * 10)])
+                            value=greenToRedGradient[100 - int(dist * 10)])
 
-    cv2.imshow("Mask", mask)
-    cv2.imwrite(os.path.join(OUTPUT_DIRECTORY, "distance_medium.jpg"), mask)
-    cv2.waitKey()
+    return mask
+    # cv2.imshow("Mask", mask)
+    # cv2.imwrite(os.path.join(OUTPUT_DIRECTORY, "distance_medium.jpg"), mask)
+    # cv2.waitKey()
 
-def cosineDistance():
+
+def cosineDistance(mainImage, secondaryImage):
     global greenToRedGradient
 
     (rows, cols, colors) = mainImage.shape
@@ -173,9 +176,10 @@ def cosineDistance():
                             fill_y=rows1,
                             value=greenToRedGradient[int(dist * 100)])
 
-    cv2.imshow("Mask", mask)
-    cv2.imwrite(os.path.join(OUTPUT_DIRECTORY, "cosine_medium.jpg"), mask)
-    #cv2.waitKey()
+    return mask
+    # cv2.imshow("Mask", mask)
+    # cv2.imwrite(os.path.join(OUTPUT_DIRECTORY, "cosine_medium.jpg"), mask)
+    # #cv2.waitKey()
 
 
 def showoffGradient():
@@ -189,12 +193,47 @@ def showoffGradient():
     cv2.waitKey()
 
 
+def tearImage(mainImage):
+    # rupem imaginea intr-un grid de 4x6
+    (rows, cols, colors) = mainImage.shape
+
+    gridX = 4
+    gridY = 6
+    auxImage = None
+    divX = int(rows / gridX)
+    divY = int(cols / gridY)
+    maskCount = 0
+    for dim_x in range(0, rows - divX, divX):
+        for dim_y in range(0, cols - divY, divY):
+            auxImage = np.zeros((divX, divY, 3), np.uint8)
+            for i in range(dim_x, dim_x + divX):
+                for j in range(dim_y, dim_y + divY):
+                    auxImage[i - dim_x][j - dim_y] = mainImage[i][j]
+                    mainImage[i][j] = np.zeros(3)
+
+            # prelucrari aux
+            mask = cosineDistance(mainImage, auxImage)
+            mask = np.concatenate((mask, mainImage), axis=1)
+            #mask = np.concatenate((mainImage, mask), axis=1)
+            cv2.imwrite(os.path.join(OUTPUT_DIRECTORY, "cosine_big_" + str(maskCount) + ".jpg"), mask)
+
+            maskCount += 1
+            print(maskCount)
+
+            for i in range(dim_x, dim_x + divX):
+                for j in range(dim_y, dim_y + divY):
+                    mainImage[i][j] = auxImage[i - dim_x][j - dim_y]
+
+
 def main():
+    global mainImage, secondaryImage
     buildGradient()
-    getImages()
-    #colorDistance()
+    # getImages()
+    mainImage = cv2.imread("..\\..\\images\\colorFlareSmall.png")
+    tearImage(mainImage)
+    # colorDistance()
     # cosineDistance()
-    mutualInformation()
+    # mutualInformation(mainImage, secondaryImage)
 
 
 if __name__ == "__main__":

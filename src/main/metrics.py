@@ -1,6 +1,4 @@
 import numpy as np
-import math
-import cv2
 # the distance is computed based on color
 from main.defs import Keypoint
 
@@ -145,4 +143,4 @@ def cosineSimilarity(keypointA, keypointB):
     denominatorB2 = np.dot(directionB, directionB) * directionWeight
     denominatorB = (denominatorB + denominatorB2) / (colorWeight + directionWeight)
 
-    return numerator / (np.sqrt(denominatorA) * np.sqrt(denominatorB))
+    return numerator / ((np.sqrt(denominatorA) * np.sqrt(denominatorB)) + 1)
