@@ -118,10 +118,17 @@ def incadreazaMask(imageMask, offset_x, offset_y, fill_x, fill_y, value):
         return
 
     for i in range(offset_y, fill_y + offset_y):
-        imageMask[i][offset_x] = value
-        imageMask[i][offset_x + fill_x- 1] = value
+        # if gradientToValue[str(value)] > gradientToValue[imageMask[i][offset_x]]:
+            imageMask[i][offset_x] = value
+        # if gradientToValue[str(value)] > gradientToValue[imageMask[i][offset_x + fill_x- 1]]:
+            imageMask[i][offset_x + fill_x- 1] = value
+
 
     for j in range(offset_x, fill_x + offset_x):
+        # if gradientToValue[str(value)] > gradientToValue[imageMask[i][offset_x]]:
+        #     imageMask[i][offset_x] = value
+        # if gradientToValue[str(value)] > gradientToValue[imageMask[i][offset_x + fill_x - 1]]:
+        #     imageMask[i][offset_x + fill_x - 1] = value
         imageMask[offset_y][j] = value
         imageMask[offset_y + fill_y - 1][j] = value
     return imageMask
@@ -248,8 +255,8 @@ def tearImage(mainImage):
     # rupem imaginea intr-un grid de gridX x gridY
     (rows, cols, colors) = mainImage.shape
     similaritaty_percent = 75.00
-    gridX = max(2, int(rows / 50))
-    gridY = max(2, int(cols / 50))
+    gridX = max(2, int(rows / 37))
+    gridY = max(2, int(cols / 37))
 
     divX = int(rows / gridX)
     divY = int(cols / gridY)
