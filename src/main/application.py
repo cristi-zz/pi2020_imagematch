@@ -212,16 +212,16 @@ def tearImage(mainImage):
                     mainImage[i][j] = np.zeros(3)
 
             # prelucrari aux
-            # mask = cosineDistance(mainImage, auxImage)
-            # mask = np.concatenate((mask, mainImage), axis=1)
-            # #mask = np.concatenate((mainImage, mask), axis=1)
-            # cv2.imwrite(os.path.join(OUTPUT_DIRECTORY, "cosine_big_" + str(maskCount) + ".jpg"), mask)
-            #
-            # maskCount += 1
-            # print(maskCount)
-            cv2.imshow("aux",auxImage)
-            cv2.imshow("main",mainImage)
-            cv2.waitKey()
+            mask = cosineDistance(mainImage, auxImage)
+            mask = np.concatenate((mask, mainImage), axis=1)
+            #mask = np.concatenate((mainImage, mask), axis=1)
+            cv2.imwrite(os.path.join(OUTPUT_DIRECTORY, "cosine_big_" + str(maskCount) + ".jpg"), mask)
+
+            maskCount += 1
+            print(maskCount)
+            # cv2.imshow("aux",auxImage)
+            # cv2.imshow("main",mainImage)
+            # cv2.waitKey()
             for i in range(dim_x, dim_x + divX):
                 for j in range(dim_y, dim_y + divY):
                     mainImage[i][j] = auxImage[i - dim_x][j - dim_y]
