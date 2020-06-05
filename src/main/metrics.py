@@ -1,7 +1,8 @@
 import numpy as np
 # the distance is computed based on color
 from main.defs import Keypoint
-
+greenToRedGradient = None
+gradientToValue = None
 
 def distanceImg(img, sablon, x_offset=0, y_offset=0, colorWeight=1):
     (rows, cols, culori) = sablon.shape

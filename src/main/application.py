@@ -65,6 +65,26 @@ def fillMask(imageMask, offset_x, offset_y, fill_x, fill_y, value):
 
     return imageMask
 
+def conturMask(imageMask, offset_x, offset_y, fill_x, fill_y, value):
+    global gradientToValue
+
+    if imageMask is None:
+        print("Bad mask")
+        return
+    (rows, cols, color) = imageMask.shape
+
+    if fill_y + offset_y > rows or fill_x + offset_x > cols:
+        print("Bad fill")
+        return
+
+    for i in range(offset_y, fill_y + offset_y):
+        for j in range(offset_x, fill_x + offset_x):
+            currentColor = imageMask[i][j]
+            if gradientToValue[str(value)] > gradientToValue[str(currentColor)]:
+                imageMask[i][j] = value
+
+    return imageMask
+
 
 def buildGradient():
     # BGR
@@ -197,8 +217,8 @@ def tearImage(mainImage):
     # rupem imaginea intr-un grid de 4x6
     (rows, cols, colors) = mainImage.shape
 
-    gridX = 4
-    gridY = 6
+    gridX = max(2, int(rows / 50))
+    gridY = max(2, int(cols / 50))
     auxImage = None
     divX = int(rows / gridX)
     divY = int(cols / gridY)
@@ -232,10 +252,12 @@ def main():
     buildGradient()
     # getImages()
     mainImage = cv2.imread("..\\..\\images\\colorFlareSmall.png")
-    tearImage(mainImage)
+    # tearImage(mainImage)
     # colorDistance()
     # cosineDistance()
-    # mutualInformation(mainImage, secondaryImage)
+
+    getImages()
+    mutualInformation(mainImage, secondaryImage)
 
 
 if __name__ == "__main__":
