@@ -203,8 +203,8 @@ def tearImage(mainImage):
     divX = int(rows / gridX)
     divY = int(cols / gridY)
     maskCount = 0
-    for dim_x in range(0, rows - divX, divX):
-        for dim_y in range(0, cols - divY, divY):
+    for dim_x in range(0, rows - divX + 1, divX):
+        for dim_y in range(0, cols - divY + 1, divY):
             auxImage = np.zeros((divX, divY, 3), np.uint8)
             for i in range(dim_x, dim_x + divX):
                 for j in range(dim_y, dim_y + divY):
@@ -212,14 +212,16 @@ def tearImage(mainImage):
                     mainImage[i][j] = np.zeros(3)
 
             # prelucrari aux
-            mask = cosineDistance(mainImage, auxImage)
-            mask = np.concatenate((mask, mainImage), axis=1)
-            #mask = np.concatenate((mainImage, mask), axis=1)
-            cv2.imwrite(os.path.join(OUTPUT_DIRECTORY, "cosine_big_" + str(maskCount) + ".jpg"), mask)
-
-            maskCount += 1
-            print(maskCount)
-
+            # mask = cosineDistance(mainImage, auxImage)
+            # mask = np.concatenate((mask, mainImage), axis=1)
+            # #mask = np.concatenate((mainImage, mask), axis=1)
+            # cv2.imwrite(os.path.join(OUTPUT_DIRECTORY, "cosine_big_" + str(maskCount) + ".jpg"), mask)
+            #
+            # maskCount += 1
+            # print(maskCount)
+            cv2.imshow("aux",auxImage)
+            cv2.imshow("main",mainImage)
+            cv2.waitKey()
             for i in range(dim_x, dim_x + divX):
                 for j in range(dim_y, dim_y + divY):
                     mainImage[i][j] = auxImage[i - dim_x][j - dim_y]
